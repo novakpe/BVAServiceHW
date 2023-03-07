@@ -1,0 +1,58 @@
+﻿<Window x:Class="UniversalTestsHW.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:XUtilsConvertersUni01="clr-namespace:XUtils.ConvertersUni01"
+        xmlns:local="clr-namespace:UniversalTestsHW"
+        mc:Ignorable="d" Loaded="Window_Loaded" Closing="Window_Closing"
+        FontSize="20" FontWeight="Bold"
+        Title="[UniversalTestsHW] Device(s)-Element(s)-Data(s) Service V02.01.000" Height="450" Width="800">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/UniversalTestsHW;component/XUtils/XamlResources/StylesCommon.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <!-- converter(s) -->
+            <XUtilsConvertersUni01:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <!-- ovladani -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20*" />
+                <ColumnDefinition Width="20*" />
+                <ColumnDefinition Width="30*" />
+                <ColumnDefinition Width="30*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <CheckBox Style="{StaticResource StyleCheckBox2X}" />
+                <Label Content="Enable" />
+            </StackPanel>
+            <!-- akce spolecne pro vsechny 'Sensor(s)' -->
+            <Button Grid.Column="0" Content="Search Dev(s)" Margin="3" FontSize="20" Tag="Search" Click="ServiceActionOnClick" />
+            <!--<Button IsEnabled="False" Grid.Column="1" Content="Load Desc(s)" Margin="3" FontSize="20" Tag="LoadDescs" Click="ServiceActionOnClick" />-->
+            <Button Grid.Column="2" Content="Read All" Margin="3" FontSize="20" Tag="Read" Click="ServiceActionOnClick" />
+            <Button Grid.Column="3" Content="Write All" Margin="3" FontSize="20" Tag="Write" Click="ServiceActionOnClick" />
+        </Grid>
+        <ScrollViewer Grid.Row="1">
+            <ListView Name="lvDevices" ButtonBase.Click="ListViewAnyOnClick">
+            <!-- Style="{StaticResource ListViewBase}" -->
+            <ListView.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <!-- 'DataTemplate' jsou v tomto souboru -->
+                        <ResourceDictionary Source="/UniversalTestsHW;component/XUtils/XamlResources/StylesListViewData.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </ListView.Resources>
+        </ListView>
+        </ScrollViewer>
+    </Grid>
+</Window>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Location="Room">
+  <Devices>
+    <!-- 'Device - Laser' -->
+    <DeviceConfig Ident="00000011" Name="Laser" Desc="NaStrope">
+      <Elements>
+        <!-- jeden 'Sensor' typu 'Out' -->
+        <ElementConfig Ident="1" Name="PosXY" Desc="PosunXY">
+	  <Datas>
+	    <DataConfig Ident="1" Name="PosX" Desc="PosunX" />
+	    <DataConfig Ident="2" Name="PosY" Desc="PosunY" />
+	  </Datas>
+	</ElementConfig>
+	<!-- jeden 'Sensor' typu 'Out' -->
+        <ElementConfig Ident="2" Name="OnOff" Desc="Zap/Vyp">
+	  <Datas>
+	    <DataConfig Ident="1" Name="OnOff" Desc="Zap/Vyp" />
+	  </Datas>
+	</ElementConfig>
+      </Elements>
+    </DeviceConfig>
+  </Devices>
+</Config>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Location="Room">
+  <Devices>
+    <!-- 'Device - Motor' -->
+    <DeviceConfig Ident="00000012" Name="Motor" Desc="NaStrope">
+      <Elements>
+        <!-- jeden 'Sensor' typu 'In' -->
+        <ElementConfig Ident="1" Name="Motor" Desc="Otaceni podlahy">
+	  <Datas>
+	    <DataConfig Ident="1" Name="Pohyb" Desc="Smer" />
+	  </Datas>
+	</ElementConfig>
+	<!-- jeden 'Sensor' typu 'In' -->
+        <ElementConfig Ident="2" Name="Nulova poloha" Desc="Ano/Ne">
+	  <Datas>
+	    <DataConfig Ident="1" Name="Zero" Desc="Ano/Ne" />
+	  </Datas>
+	</ElementConfig>
+	<!-- jeden 'Sensor' typu 'In/Out' -->
+        <ElementConfig Ident="3" Name="Pozice" Desc="Pozice podlahy">
+	  <Datas>
+	    <DataConfig Ident="1" Name="Otoceni" Desc="Pozice" />
+	    <DataConfig Ident="2" Name="Otoceni" Desc="Pozice" />
+	  </Datas>
+	</ElementConfig>
+      </Elements>
+    </DeviceConfig>
+  </Devices>
+</Config>

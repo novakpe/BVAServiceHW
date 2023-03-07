@@ -1,0 +1,14 @@
+﻿<Window x:Class="BVATests.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BVATests"
+        mc:Ignorable="d" Loaded="WindowOnLoaded" Closing="WindowOnClosing"
+        Title="Blue Velvet Arena (BVA) - Test (Vxx.xx.xxx)" Height="450" Width="800">
+    <!-- pro roztazeni rozrazeni na celou plochu dialogu -->
+    <Viewbox>
+        <!-- tlacitko pro zobrazeni testovaciho dialogu -->
+        <Button Content="Service" BorderBrush="Transparent" Click="TestOnClick"/>
+    </Viewbox>
+</Window>
