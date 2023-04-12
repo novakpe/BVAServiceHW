@@ -6,7 +6,7 @@
         xmlns:BVAServiceDevs="clr-namespace:BVAService.Devices"
         xmlns:local="clr-namespace:BVAService"
         mc:Ignorable="d" Loaded="WindowOnLoaded" Closing="WindowOnClosing" FontSize="25"
-        Title="Blue Velvet Arena (BVA) - Service (V02.02.000)" Height="600" Width="1000">
+        Title="Blue Velvet Arena (BVA) - Service (V02.03.000)" Height="600" Width="1000">
     <Window.Resources>
         <!-- styly -->
         <Style x:Key="ComboBoxStyle" TargetType="ComboBox">
@@ -120,6 +120,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="50" />
                     <RowDefinition />
+                    <RowDefinition Height="80" />
                     <RowDefinition Height="50" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
@@ -132,19 +133,54 @@
                                     MouseDown="ManualLaserOnMouseDown" MouseMove="ManualLaserOnMouseMove" MouseUp="ManualLaserOnMouseUp"/>
                 </Canvas>
                 <Label  Grid.Row="1" Grid.Column="0" Name="manualLaserPos" Content="Pos: --- ; ---" HorizontalAlignment="Center" IsHitTestVisible="False" />
-                <Button Grid.Row="2" Grid.Column="0" Content="Laser On / Off" FontSize="30" FontWeight="Bold" Margin="2" Click="ManualLaserOnOffOnClick" />
-                <ListView Grid.Row="1" Grid.Column="1" x:Name="lvLaserPoss" Margin="2">
-                    <ListView.Resources>
+                <Grid Grid.Row="2" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="&#8592;" FontSize="50" FontWeight="Bold" Margin="2" Tag="Left"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="ManualLaserStepOnClick"/>
+                    <Button Grid.Column="1" Content="&#8593;" FontSize="50" FontWeight="Bold" Margin="2" Tag="Up"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="ManualLaserStepOnClick"/>
+                    <Button Grid.Column="2" Content="&#8595;" FontSize="50" FontWeight="Bold" Margin="2" Tag="Down"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="ManualLaserStepOnClick"/>
+                    <Button Grid.Column="3" Content="&#8594;" FontSize="50" FontWeight="Bold" Margin="2" Tag="Right"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="ManualLaserStepOnClick"/>
+                </Grid>
+                <Button Grid.Row="3" Grid.Column="0" Content="Laser On / Off" FontSize="30" FontWeight="Bold" Margin="2" Click="ManualLaserOnOffOnClick" />
+                <ListView Grid.Row="1"  Grid.Column="1" x:Name="lvLaserPoss" Margin="2" MouseLeftButtonUp="ManualLasetSelectNamedPosition">
+                    <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type BVAServiceDevs:LaserPos}">
-                            <TextBlock>
-                                            <Run Text="{Binding Name}"/><Run Text=" ("/><Run Text="{Binding PosX}"/><Run Text=";"/><Run Text="{Binding PosY}"/><Run Text=")"/>
-                            </TextBlock>
+                            <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Stretch">
+                                <StackPanel>
+                                <!-- prvni radek je nazev pozice -->
+                                <Label Content="{Binding Name}" Margin="0" Padding="0" HorizontalContentAlignment="Center" />
+                                <!-- druhy radek jsou souradnice -->
+                                <TextBlock Margin="0" Padding="0" HorizontalAlignment="Center">
+                                    <Run Text=" (X="/><Run Text="{Binding PosX}"/><Run Text=";Y="/><Run Text="{Binding PosY}"/><Run Text=")"/>
+                                </TextBlock>
+                            </StackPanel>
+                            </Border>
                         </DataTemplate>
-                    </ListView.Resources>
+                    </ListView.ItemTemplate>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <!-- 'lokalni menu pro odstraneni polozky' -->
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Vymazat" Click="ManualLasetDeteleNamedPosition"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
                 </ListView>
-                <Button Grid.Row="2" Grid.Column="1" Content="Set Pos" FontSize="30" FontWeight="Bold" Margin="2" Click="ManualLaserSetLocationOnClick" />
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="tbLasPosName" Margin="1,15,2,15" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                <Button Grid.Row="3" Grid.Column="1" Content="Add Pos" FontSize="30" FontWeight="Bold" Margin="2" Click="ManualLaserAddLocationOnClick" />
                 <!-- povoleni bloku 'Laser' -->
-                <Rectangle x:Name="rectLaserEnable" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Grid.ColumnSpan="2" Fill="LightGray" Opacity="0.7" />
+                <Rectangle x:Name="rectLaserEnable" Grid.Row="0" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="2" Fill="LightGray" Opacity="0.7" />
             </Grid>
         </Border>
         <!-- motor -->

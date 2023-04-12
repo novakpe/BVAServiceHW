@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 // UniTest
 using UniTestsHW.Data;
+using BVAService.Devices;
 
 namespace BVAService
 {
@@ -37,18 +38,22 @@ namespace BVAService
             {
                 // cesta k servisnim souborum
                 UniTestsHW.Global.GlobalConsts.PathDevsElmsInfo = "../../../../../DataDevsElmsInfo";
-                // cesta k obrazkum
+                // cesta k obrazkum a pozicim
                 BVAService.Global.GlobalConsts.PathDataImages = "../../../../../DataImages";
+                BVAService.Global.GlobalConsts.PathDataPositions = "../../../../../DataPositions";
                 // HW zarizeni jsou povoleny
-                Devices.DevsCmns.EnableHW = true;
+                //DevsCmns.EnableHW = DevsCmns.EnHwDevType.None;
+                DevsCmns.EnableHW = DevsCmns.EnHwDevType.Simul;
+                //DevsCmns.EnableHW = DevsCmns.EnHwDevType.Real;
                 // nalezeni vsech USB-HID zarizeni
-                /* string[] devsStr = */ Devices.DevsCmns.FindAllDevice();
+                /* string[] devsStr = */
+                DevsCmns.FindAllDevice();
                 // zobrazeni seznamu nalezeni / nenalezenych zarizeni
-                Devices.DevsMain.ShowDevicesStatus();
+                DevsMain.ShowDevicesStatus();
             }
 
             // musi se odblokovat casti dialogu podle nalezenych zarizeni
-            foreach (string ident in Devices.DevsCmns.DevsSerNumToName.Keys)
+            foreach (string ident in DevsCmns.DevsSerNumToName.Keys)
             {
                 // test zda je toto zarizeni pripojeno / nalezeno
                 ItmDevice itmDevice = (ItmDevice)DataMain.devices.FirstOrDefault(item => item.DeviceConfig.Ident == ident);
@@ -57,18 +62,23 @@ namespace BVAService
                 {
                     // povoleni / blokovani casti GUI podle typu nalezenych externich zarizeni
                     // Laser
-                    if (Devices.DevsCmns.DevsSerNumToName[itmDevice.Ident] == "Laser") { rectLaserEnable.Visibility = Visibility.Collapsed; }
+                    if (DevsCmns.DevsSerNumToName[itmDevice.Ident] == "Laser") { rectLaserEnable.Visibility = Visibility.Collapsed; }
                     // Motor
-                    if (Devices.DevsCmns.DevsSerNumToName[itmDevice.Ident] == "Motor") { rectMotorEnable.Visibility = Visibility.Collapsed; }
+                    if (DevsCmns.DevsSerNumToName[itmDevice.Ident] == "Motor") { rectMotorEnable.Visibility = Visibility.Collapsed; }
                     // Anchor(s)
-                    if (Devices.DevsCmns.DevsSerNumToName[itmDevice.Ident].StartsWith("Anchor") == true) { rectAnchorEnable.Visibility = Visibility.Collapsed; }
+                    if (DevsCmns.DevsSerNumToName[itmDevice.Ident].StartsWith("Anchor") == true) { rectAnchorEnable.Visibility = Visibility.Collapsed; }
                 }
             }
 
+            // Test
+            //rectLaserEnable.Visibility = rectMotorEnable.Visibility = rectAnchorEnable.Visibility = Visibility.Collapsed;
+
             // nacteni dat pro test (toto je pouze pro inetrni test, ne pro externi aplikaci)
-            string[] imagesNames = Devices.DevsMain.LoadImages(BVAService.Global.GlobalConsts.PathDataImages);
+            string[] imagesNames = DevsMain.LoadImages(BVAService.Global.GlobalConsts.PathDataImages);
+            string[] positionsNames = DevsMain.LoadPositions(BVAService.Global.GlobalConsts.PathDataPositions);
+            lvLaserPoss.ItemsSource = DevsMain.laserPositions;
             // seznam dostupnych 'Anchor'
-            lvDevAnchors.ItemsSource = Devices.DevsMain.devsAnchor;
+            lvDevAnchors.ItemsSource = DevsMain.devsAnchor;
 
             //// testovaci cilove pozice pro 'Laser'
             //lvLaserPoss.ItemsSource = new Devices.LaserPos[]
@@ -95,7 +105,7 @@ namespace BVAService
             if (NoCloseOnlyHide == true) { e.Cancel = true; this.Hide(); }
         }
 
-        // --- manual ---
+        // --- rizeni manualniho rezimu ---
 
         // zda jsou / nejsou zariznei / povolena
         //private bool DevicesEnable = false;
@@ -106,32 +116,32 @@ namespace BVAService
             // vyzvednuti pozadovane akce
             string actionStr = (string)((Button)sender).Tag;
             // prevod 'String' na 'Enum'
-            Devices.DevsCmns.EnMainAction action = Enum.Parse<Devices.DevsCmns.EnMainAction>(actionStr);
+            DevsCmns.EnMainAction action = Enum.Parse<DevsCmns.EnMainAction>(actionStr);
             // stav povoleni / blokovani zarizeni
             //DevicesEnable = (action == Devices.DevsCmns.EnMainAction.Enable);
             // spusteni / zastaveni vsech externich zarizeni
-            Devices.DevsCmns.SetMode(action);
+            DevsCmns.SetMode(action);
 
-            bEnable.IsEnabled = (action == Devices.DevsCmns.EnMainAction.Disable);
-            bDisable.IsEnabled = (action == Devices.DevsCmns.EnMainAction.Enable);
+            bEnable.IsEnabled = (action == DevsCmns.EnMainAction.Disable);
+            bDisable.IsEnabled = (action == DevsCmns.EnMainAction.Enable);
         }
 
         // vyvolani pomocneho dialogu pro primou komunikaci s HW
         private void ManulServiceOnClick(object sender, RoutedEventArgs e)
             { UniTestsHW.App.AppExt.ShowDebug(this); }
 
-        // --
+        // --- kotvy / obrazky ---
 
         // zmena stavu nektereho vystupu 'Anchor'
         private void DevAnchorStateChanged(object sender, EventArgs e)
         {
             // odkaz na zmeneny 'Anchor'
-            Devices.DeviceAnchor devAnchor = (Devices.DeviceAnchor)((ComboBox)sender).Tag;
+            DeviceAnchor devAnchor = (DeviceAnchor)((ComboBox)sender).Tag;
             // zaslani obrazku do zarizeni (cislo zarizeni, nazev obrazku)
-            Devices.DevsCmns.AnchorSetImage(devAnchor.Number, devAnchor.Value);
+            DevsCmns.AnchorSetImage(devAnchor.Number, devAnchor.Value);
         }
 
-        // --
+        // --- zvuk ---
 
         // zobrazeni seznamu dostupnych svukovych souboru
         private void SoundToPlayOnDropDownOpened(object sender, EventArgs e)
@@ -156,40 +166,99 @@ namespace BVAService
             //mediaPlayer.Play();
         }
 
-        // --
+        // --- laser ---
 
         // uchopeni 'Ellipse'
         private void ManualLaserOnMouseDown(object sender, MouseButtonEventArgs e)
-        { Devices.DevsCmns.LaserMoveStart(ePosition); }
+            { DevsCmns.LaserMoveStart(ePosition); }
         // pohyb s 'Ellipse' po 'Canvas'
         private void ManualLaserOnMouseMove(object sender, MouseEventArgs e)
         {
-            if (Devices.DevsCmns.laserMove == true)
+            if (DevsCmns.laserMove == true)
             {
-                Devices.DevsCmns.LaserMoveProcess(e.GetPosition(cPosition), ePosition, cPosition);
-                manualLaserPos.Content = "Pos: " + Devices.DevsCmns.LaserPosX + " ; " + Devices.DevsCmns.LaserPosY;
+                DevsCmns.LaserMoveProcess(e.GetPosition(cPosition), ePosition, cPosition);
+                manualLaserPos.Content = "Pos: X = " + DevsCmns.LaserPosX + " / Y = " + DevsCmns.LaserPosY;
             }
         }
         // pusteni 'Ellipse'
         private void ManualLaserOnMouseUp(object sender, MouseButtonEventArgs e)
-        { Devices.DevsCmns.LaserMoveEnd(ePosition); }
+            { DevsCmns.LaserMoveEnd(ePosition); }
 
         // vykonani cinnosti testu
         private void ManualLaserOnOffOnClick(object sender, RoutedEventArgs e)
         {
-            ePosition.Fill = (Devices.DevsCmns.LaserOnOff(Devices.DevsCmns.EnLaserState.Toggle) == false) ? Brushes.Black : Brushes.Red;
+            ePosition.Fill = (DevsCmns.LaserOnOff(DevsCmns.EnLaserState.Toggle) == false) ? Brushes.Black : Brushes.Red;
         }
 
-        // nastaveni pred-definovane pozice pro laser
-        private void ManualLaserSetLocationOnClick(object sender, RoutedEventArgs e)
+        // krok laserem do pozadovaneho smeru
+        private void ManualLaserStepOnClick(object sender, RoutedEventArgs e)
+        {
+            // vyzvednuti pozadovane akce
+            string actStr = (string)((Button)sender).Tag;
+            // vykonani pozadovane akce (posun o jeden krok pozadovanym smerem)
+            switch(actStr)
+            {
+                case "Left": { if (DevsCmns.LaserPosX > -100) { DevsCmns.LaserPosX--; } break; }
+                case "Up": { if (DevsCmns.LaserPosY < 100) { DevsCmns.LaserPosY++; } break; }
+                case "Down": { if (DevsCmns.LaserPosY > -100) { DevsCmns.LaserPosY--; } break; }
+                case "Right": { if (DevsCmns.LaserPosX < 100) { DevsCmns.LaserPosX++; } break; }
+            }
+            // zobrazeni nove / aktualni pozice
+            manualLaserPos.Content = "Pos: X = " + DevsCmns.LaserPosX + " / Y = " + DevsCmns.LaserPosY;
+            // prepocet pozice na plochu 'Canvas'
+            double posCanX = (DevsCmns.LaserPosX / 100.0) * (cPosition.ActualWidth / 2) + (cPosition.ActualWidth / 2);
+            double posCanY = (-DevsCmns.LaserPosY / 100.0) * (cPosition.ActualHeight / 2) + (cPosition.ActualHeight / 2);
+            // nova pozice pro 'Ellipse' na 'Canvas' (podle krokoveho posunu)
+            Canvas.SetLeft(ePosition, posCanX - ePosition.ActualWidth / 2);
+            Canvas.SetTop(ePosition, posCanY - ePosition.ActualHeight / 2);
+        }
+
+        // vyber polozky z 'ListView'
+        private void ManualLasetSelectNamedPosition(object sender, MouseButtonEventArgs e)
         {
             // vyzvednuti oznacene pred-definovane pozice
-            Devices.LaserPos laserPos = (Devices.LaserPos)lvLaserPoss.SelectedItem;
+            LaserPos laserPos = (LaserPos)lvLaserPoss.SelectedItem;
             // pokud neni nic oznaceno, tak navrat
             if (laserPos == null) { return; }
             // nastaveni vybrae pozice
-            Devices.DevsCmns.LaserPosPercent(Devices.DevsCmns.EnLaserAction.Position, laserPos.PosX, laserPos.PosY);
+            DevsCmns.LaserPosPercent(DevsCmns.EnLaserAction.Position, laserPos.PosX, laserPos.PosY);
+
+            // zobrazeni nove / aktualni pozice
+            manualLaserPos.Content = "Pos: X = " + DevsCmns.LaserPosX + " / Y = " + DevsCmns.LaserPosY;
+            // prepocet pozice na plochu 'Canvas'
+            double posCanX = (DevsCmns.LaserPosX / 100.0) * (cPosition.ActualWidth / 2) + (cPosition.ActualWidth / 2);
+            double posCanY = (-DevsCmns.LaserPosY / 100.0) * (cPosition.ActualHeight / 2) + (cPosition.ActualHeight / 2);
+            // nova pozice pro 'Ellipse' na 'Canvas' (podle krokoveho posunu)
+            Canvas.SetLeft(ePosition, posCanX - ePosition.ActualWidth / 2);
+            Canvas.SetTop(ePosition, posCanY - ePosition.ActualHeight / 2);
         }
+
+        // odtraneni polozky / pozice ze seznamu
+        private void ManualLasetDeteleNamedPosition(object sender, RoutedEventArgs e)
+        {
+            // vyzvednuti oznacene pred-definovane pozice
+            LaserPos laserPos = (LaserPos)lvLaserPoss.SelectedItem;
+            // nutno vyzvednout obsah 'ItemsSource' jako 'IList'
+            var itemsSource = lvLaserPoss.ItemsSource as IList<LaserPos>;
+            if (itemsSource != null) itemsSource.Remove(laserPos);
+            lvLaserPoss.ItemsSource = null; lvLaserPoss.ItemsSource = itemsSource;
+            // ulozeni novych pozic
+            DevsMain.SavePositionsInt(BVAService.Global.GlobalConsts.PathDataPositions);
+        }
+
+        // nastaveni pred-definovane pozice pro laser
+        private void ManualLaserAddLocationOnClick(object sender, RoutedEventArgs e)
+        {
+            lvLaserPoss.ItemsSource = null;
+            // pridani nove pozice do seznamu
+            DevsMain.laserPositions.Add(new LaserPos() { PosX = DevsCmns.LaserPosX, PosY = DevsCmns.LaserPosY, Name = tbLasPosName.Text });
+            // aktualizace zobrazeni seznamu
+            lvLaserPoss.ItemsSource = DevsMain.laserPositions;
+            // ulozeni novych pozic
+            DevsMain.SavePositionsInt(BVAService.Global.GlobalConsts.PathDataPositions);
+        }
+
+        // --- motor / pohyb podlahy ---
 
         // ovladani motoru
         private void ManualMotorControlOnClick(object sender, RoutedEventArgs e)
@@ -197,19 +266,19 @@ namespace BVAService
             // vyzvednuti typu cinnosti (stisknute tlacitko)
             string actionStr = (string)((Button)sender).Tag;
             // vykonani cinnosti
-            Devices.DevsCmns.EnFloorAction floorAction = Enum.Parse<Devices.DevsCmns.EnFloorAction>(actionStr);
-            Devices.DevsCmns.FloorMove(floorAction);
+            DevsCmns.EnFloorAction floorAction = Enum.Parse<DevsCmns.EnFloorAction>(actionStr);
+            DevsCmns.FloorMove(floorAction);
         }
 
         // zmena hodnoty v nejakem 'Device'
         public void OnDeviceChanged(ItmDevice device)
         {
-            if (device.Ident == Devices.DevsCmns.EnDeviceIdent.Motor)
+            if (device.Ident == DevsCmns.EnDeviceIdent.Motor)
             {
                 bool zero = DataUtils.GetValue<ItmDataBool>(
-                    Devices.DevsCmns.EnDeviceIdent.Motor, (byte)Devices.DevsCmns.EnMotorElement.Zero, 1).Value;
+                    DevsCmns.EnDeviceIdent.Motor, (byte)DevsCmns.EnMotorElement.Zero, 1).Value;
                 Int32 rotary = DataUtils.GetValue<ItmDataInt32>(
-                    Devices.DevsCmns.EnDeviceIdent.Motor, (byte)Devices.DevsCmns.EnMotorElement.Rotary, 1).Value;
+                    DevsCmns.EnDeviceIdent.Motor, (byte)DevsCmns.EnMotorElement.Rotary, 1).Value;
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {

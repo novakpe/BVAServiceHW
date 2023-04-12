@@ -90,7 +90,7 @@ public class CmnUtils
                 //}
             }
         }
-        // rovnez je potreb se podivat, zda pro toto 'Device' neni popis
+        // rovnez je potreba se podivat, zda pro toto 'Device' neni popis
         Configs.ConfigMain.LoadConfig(device);
     }
 

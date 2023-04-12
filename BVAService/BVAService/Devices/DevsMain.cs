@@ -11,6 +11,7 @@ namespace BVAService.Devices
 {
     public class DevsMain
     {
+        // seznam 'Anchor(s)'
         public static List<DeviceAnchor> devsAnchor = new List<DeviceAnchor>();
 
         // nacteni vsech dostupnych obrazku
@@ -25,10 +26,18 @@ namespace BVAService.Devices
                     { devsAnchor.Add(new DeviceAnchor() { Name = "Anchor " + (i + 1).ToString(), Number = (i + 1) }); }
             }
             // nacteni obrazku
-            //LoadImagesInt(System.IO.Path.Combine(Project.Global.GlobalConsts.PathDataAppBase, "Images"));
             LoadImagesInt(pathImages);
             // vraceni seznamu vsech nactenych obrazku
             return GetImageNames();
+        }
+
+        // nacteni vsech dostupnych pozic
+        public static string[] LoadPositions(string pathPositions)
+        {
+            // nacteni obrazku
+            LoadPositionsInt(pathPositions);
+            // vraceni seznamu vsech nactenych obrazku
+            return LaserNames;
         }
 
         // zobrazeni informaci o nalezenych / nenalezenych zarizenich
@@ -64,14 +73,14 @@ namespace BVAService.Devices
             MessageBox.Show(sb.ToString(), "Nalezena USB zarizeni!");
         }
 
-        // --- ---
+        // --- obrazky ---
 
         // typ obrazky (ulozeni dat)
         public enum EnImageDataType { None = 0, Type1 = 1, Type2 = 2 }
         // seznam dostupnych obrazku
         public static List<OneImage> images = new List<OneImage>();
 
-        // nacteni vsech dostunych obrazku
+        // nacteni vsech dostunych obrazku (interni)
         public static void LoadImagesInt(string directory)
         {
             System.IO.Directory.CreateDirectory(directory);
@@ -161,5 +170,34 @@ namespace BVAService.Devices
         // vraceni seznamu dostupnych obrazky pro 'ComboBox' v GUI
         public static string[] GetImageNames()
             { return images.Select(image => image.Name).ToArray(); }
+
+        // --- pozice ---
+
+        // seznam preddefinovanych pozic pro 'Laser'
+        public static List<LaserPos> laserPositions = new List<LaserPos>();
+
+        // nacteni vsech dostunych obrazku (interni)
+        public static void LoadPositionsInt(string directory)
+        {
+            // vytvoreni pod-adresare pokud jeste neni (aby proste existoval)
+            System.IO.Directory.CreateDirectory(directory);
+            // ulozeni vsech dostupnych pozic
+            List<LaserPos> positions = XUtils.Xml.XmlSerialization.XmlFileToClass<List<LaserPos>>(directory, "LaserPositions.xml");
+            // pokud jsou nactene pozice, tak se vlozi do seznamu pozic
+            if ((positions != null) && (positions.Count > 0)) { laserPositions.AddRange(positions); }
+        }
+
+        // ulozeni vsech dostunych obrazku (interni)
+        public static void SavePositionsInt(string directory)
+        {
+            // vytvoreni pod-adresare pokud jeste neni
+            System.IO.Directory.CreateDirectory(directory);
+            // ulozeni vsech dostupnych pozic
+            XUtils.Xml.XmlSerialization.ClassToXmlFile<List<LaserPos>>(directory, "LaserPositions.xml", laserPositions);
+        }
+
+        // vraceni seznamu dostupnych obrazky pro 'ComboBox' v GUI
+        public static string[] LaserNames
+            { get { return laserPositions.Select(position => position.Name).ToArray(); } }
     }
 }

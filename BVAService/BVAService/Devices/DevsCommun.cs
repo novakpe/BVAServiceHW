@@ -1,4 +1,5 @@
-﻿// .NET
+﻿
+// .NET
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +9,17 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 // UnilTests
+using UniTestsHW.Communs;
 using UniTestsHW.Data;
 
 namespace BVAService.Devices
 {
     public class DevsCmns
     {
-        private static byte[] cmdDataReset = new byte[] { (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmdModeData.ResetSW };
+        private static byte[] cmdDataReset = new byte[] { (byte)CmnConsts.EnPaketCmdModeData.ResetSW };
 
-        public static bool EnableHW { get; set; } = false;
+        public enum EnHwDevType { None, Real, Simul }
+        public static EnHwDevType EnableHW { get; set; } = EnHwDevType.None;
 
         // pouzite 'Device(s)' ...
         public class EnDeviceIdent
@@ -74,43 +77,122 @@ namespace BVAService.Devices
         // (vraceni poctu skutecne nalezenych zarizeni)
         public static string[] FindAllDevice()
         {
-            if (EnableHW == true)
+            // pokud se pouzivaji realna zarizeni
+            if (EnableHW == EnHwDevType.Real)
             {
                 // nalezeni vsech dostupnych zarizeni
                 int count = UniTestsHW.Communs.CmnMain.FindAllDevice();
                 // pokud neni zadne zarizeni, tak rovno navrat
                 if (count == 0) { return null; }
-                // vytvoreni textoveho seznamu nalezenych USB zarizeni
-                List<string> devicesAdr = new List<string>();
-                // sestaveni seznamu adres nalezenych zarizeni
-                foreach (ItmDevice itmDevice in DataMain.devices)
-                {
-                    // adresa jednoho nalezeneho zarizeni
-                    devicesAdr.Add(itmDevice.Ident);
-                }
-                // vracei seznamu jako pole
-                return devicesAdr.ToArray();
             }
-            return null;
+
+            // pokud se pouzivaji simulovana zarizeni
+            if (EnableHW == EnHwDevType.Simul)
+            {
+                // simulovane zarizeni 'Laser'
+                // celkove zarizeni
+                ItmDevice simulDevLaser = new ItmDevice() { Ident = "00000011", CmnType = CmnConsts.EnCmnType.None, CmnObject = null };
+                UniTestsHW.Configs.ConfigMain.LoadConfig(simulDevLaser);
+                DataMain.devices.Add(simulDevLaser);
+                // 'Element' - Pozice
+                ItmElement simulDevLaserElmPosXY = new ItmElement() { Ident = 1, RefDevice = simulDevLaser };
+                simulDevLaserElmPosXY.ElmStatus = DataConsts.EnElmStatus.OK;
+                simulDevLaserElmPosXY.ElmType = DataConsts.EnElmType.None;
+                simulDevLaser.Elements.Add(simulDevLaserElmPosXY);
+                // 'Data' - PosX (Int8) a PosY (Int8)
+                ItmDataInt8 simulDevLaserElmDataPosX = new ItmDataInt8() { Ident = 1, DataType = DataConsts.EnDataType.Int8, Dir = CmnConsts.EnDir.Out, RefElement = simulDevLaserElmPosXY };
+                simulDevLaserElmPosXY.Items.Add(simulDevLaserElmDataPosX);
+                ItmDataInt8 simulDevElmDataPosY = new ItmDataInt8() { Ident = 2, DataType = DataConsts.EnDataType.Int8, Dir = CmnConsts.EnDir.Out, RefElement = simulDevLaserElmPosXY };
+                simulDevLaserElmPosXY.Items.Add(simulDevElmDataPosY);
+                // 'Element' - OnOff
+                ItmElement simulDevLaserElmOnOff = new ItmElement() { Ident = 2, RefDevice = simulDevLaser };
+                simulDevLaserElmOnOff.ElmStatus = DataConsts.EnElmStatus.OK;
+                simulDevLaserElmOnOff.ElmType = DataConsts.EnElmType.None;
+                simulDevLaser.Elements.Add(simulDevLaserElmOnOff);
+                // 'Data' - OnOff (Bool)
+                ItmDataBool simulDevLaserElmDataOnOff = new ItmDataBool() { Ident = 1, DataType = DataConsts.EnDataType.Bool, Dir = CmnConsts.EnDir.Out, RefElement = simulDevLaserElmOnOff };
+                simulDevLaserElmOnOff.Items.Add(simulDevLaserElmDataOnOff);
+
+                // simulovane zarizeni 'Motor'
+                // celkove zarizeni
+                ItmDevice simulDevMotor = new ItmDevice() { Ident = "00000012", CmnType = CmnConsts.EnCmnType.None, CmnObject = null };
+                UniTestsHW.Configs.ConfigMain.LoadConfig(simulDevMotor);
+                DataMain.devices.Add(simulDevMotor);
+                // 'Element' - Pohyb
+                ItmElement simulDevMotorElmMove = new ItmElement() { Ident = 1, RefDevice = simulDevMotor };
+                simulDevMotorElmMove.ElmStatus = DataConsts.EnElmStatus.OK;
+                simulDevMotorElmMove.ElmType = DataConsts.EnElmType.None;
+                simulDevMotor.Elements.Add(simulDevMotorElmMove);
+                // 'Data' - Pohyb (Int8)
+                ItmDataInt8 simulDevMotorElmDataPosX = new ItmDataInt8() { Ident = 1, DataType = DataConsts.EnDataType.Int8, Dir = CmnConsts.EnDir.Out, RefElement = simulDevLaserElmPosXY };
+                simulDevMotorElmMove.Items.Add(simulDevMotorElmDataPosX);
+                // 'Element' - Zero Contact
+                ItmElement simulDevMotorElmZero = new ItmElement() { Ident = 2, RefDevice = simulDevMotor };
+                simulDevMotorElmZero.ElmStatus = DataConsts.EnElmStatus.OK;
+                simulDevMotorElmZero.ElmType = DataConsts.EnElmType.None;
+                simulDevMotor.Elements.Add(simulDevMotorElmZero);
+                // 'Data' - Zero Contact (Bool)
+                ItmDataBool simulDevMotorElmDataZero = new ItmDataBool() { Ident = 1, DataType = DataConsts.EnDataType.Bool, Dir = CmnConsts.EnDir.In, RefElement = simulDevLaserElmOnOff };
+                simulDevMotorElmZero.Items.Add(simulDevMotorElmDataZero);
+                // 'Element' - Rotate Count
+                ItmElement simulDevMotorElmCount = new ItmElement() { Ident = 3, RefDevice = simulDevMotor };
+                simulDevMotorElmCount.ElmStatus = DataConsts.EnElmStatus.OK;
+                simulDevMotorElmCount.ElmType = DataConsts.EnElmType.None;
+                simulDevMotor.Elements.Add(simulDevMotorElmCount);
+                // 'Data' - Rotate Count (Bool)
+                ItmDataInt32 simulDevMotorElmDataCount = new ItmDataInt32() { Ident = 1, DataType = DataConsts.EnDataType.Int32, Dir = CmnConsts.EnDir.InOut, RefElement = simulDevLaserElmOnOff };
+                simulDevMotorElmCount.Items.Add(simulDevMotorElmDataCount);
+
+                // simulovane zarizeni 'Anchor'
+                for (int i = 21; i < 29; i++)
+                {
+                    // celkove zarizeni
+                    ItmDevice simulDevAnchor = new ItmDevice() { Ident = i.ToString("D8") /* "00000021" */, CmnType = CmnConsts.EnCmnType.None, CmnObject = null };
+                    UniTestsHW.Configs.ConfigMain.LoadConfig(simulDevAnchor);
+                    DataMain.devices.Add(simulDevAnchor);
+                    // 'Element' - Image
+                    ItmElement simulDevAnchorElmImage = new ItmElement() { Ident = 1, RefDevice = simulDevAnchor };
+                    simulDevAnchorElmImage.ElmStatus = DataConsts.EnElmStatus.OK;
+                    simulDevAnchorElmImage.ElmType = DataConsts.EnElmType.None;
+                    simulDevAnchor.Elements.Add(simulDevAnchorElmImage);
+                    // 'Data' - Image (Bytes)
+                    ItmDataInt32 simulDevAnchorElmDataImage = new ItmDataInt32() { Ident = 1, DataType = DataConsts.EnDataType.Int32, Dir = CmnConsts.EnDir.InOut, RefElement = simulDevLaserElmOnOff };
+                    simulDevAnchorElmImage.Items.Add(simulDevAnchorElmDataImage);
+                }
+            }
+
+            // pokud se nepouzivaji zadna zarizeni
+            if (EnableHW == EnHwDevType.None) { }
+
+            // vytvoreni textoveho seznamu nalezenych USB zarizeni
+            List<string> devicesAdr = new List<string>();
+            // sestaveni seznamu adres nalezenych zarizeni
+            foreach (ItmDevice itmDevice in DataMain.devices)
+            {
+                // adresa jednoho nalezeneho zarizeni
+                devicesAdr.Add(itmDevice.Ident);
+            }
+            // vracei seznamu jako pole
+            return devicesAdr.ToArray();
         }
 
         // spusteni / zastaveni vsech externich zarizeni
         public static void SetMode(EnMainAction action)
         {
-            if (EnableHW == true)
+            if (EnableHW != EnHwDevType.None)
             {
                 byte[] cmdData = null;
                 // vytvoreni seznamu cinnosti pro vykonani
                 switch(action)
                 {
                     case EnMainAction.Enable: { cmdData = new byte[]
-                        { (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmdModeData.ResetSW, (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmdModeData.Enable }; break; }
+                        { (byte)CmnConsts.EnPaketCmdModeData.ResetSW, (byte)CmnConsts.EnPaketCmdModeData.Enable }; break; }
                     case EnMainAction.Disable: { cmdData = new byte[]
-                        { (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmdModeData.Disable, (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmdModeData.ResetSW }; break; }
+                        { (byte)CmnConsts.EnPaketCmdModeData.Disable, (byte)CmnConsts.EnPaketCmdModeData.ResetSW }; break; }
                 }
                 // zaslani povelu do zarizeni
-                UniTestsHW.Communs.CmnMain.CmdWrite(null /* vsecm 'Device(s)' */,
-                    (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmd.Mode, (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmdModeSub.Device, cmdData);
+                CmnMain.CmdWrite(null /* vsecm 'Device(s)' */,
+                    (byte)CmnConsts.EnPaketCmd.Mode, (byte)CmnConsts.EnPaketCmdModeSub.Device, cmdData);
 
                 // !!! Test !!!
                 //byte number = 4;
@@ -169,30 +251,30 @@ namespace BVAService.Devices
 
         // potrebne Element(s) jako 'Propertie(s)' (toto neni nutne potreba, lze volat rovnou v miste pouziti)
 
-        public static sbyte LaserPosX // Value = -/+127
+        public static sbyte LaserPosX // Value = -/+100
         {
             get
             {
-                if (EnableHW == false) { return 0; }
+                if (EnableHW == EnHwDevType.None) { return 0; }
                 return DataUtils.GetValue<ItmDataInt8>(EnDeviceIdent.Laser, (byte)EnLaserElement.PosXY, 1).Value;
             }
             set
             {
-                if (EnableHW == true)
+                if (EnableHW != EnHwDevType.None)
                     { DataUtils.GetValue<ItmDataInt8>(EnDeviceIdent.Laser, (byte)EnLaserElement.PosXY, 1).Value = value; }
             }
         }
 
-        public static sbyte LaserPosY // Value = -/+127
+        public static sbyte LaserPosY // Value = -/+100
         {
             get
             {
-                if (EnableHW == false) { return 0; }
+                if (EnableHW == EnHwDevType.None) { return 0; }
                 return DataUtils.GetValue<ItmDataInt8>(EnDeviceIdent.Laser, (byte)EnLaserElement.PosXY, 2).Value;
             }
             set
             {
-                if (EnableHW == true)
+                if (EnableHW != EnHwDevType.None)
                     { DataUtils.GetValue<ItmDataInt8>(EnDeviceIdent.Laser, (byte)EnLaserElement.PosXY, 2).Value = value; }
             }
         }
@@ -201,18 +283,19 @@ namespace BVAService.Devices
         {
             get
             {
-                if (EnableHW == false) { return false; }
+                if (EnableHW == EnHwDevType.None) { return false; }
                 return DataUtils.GetValue<ItmDataBool>(EnDeviceIdent.Laser, (byte)EnLaserElement.OnOff, 1).Value;
             }
             set
             {
-                if (EnableHW == true)
+                if (EnableHW != EnHwDevType.None)
                     { DataUtils.GetValue<ItmDataBool>(EnDeviceIdent.Laser, (byte)EnLaserElement.OnOff, 1).Value = value; }
             }
         }
 
         // --- obsluha z GUI ---
 
+        // zda se laser prave pohybuje
         public static bool laserMove = false;
 
         // uchopeni 'Ellipse'
@@ -227,14 +310,13 @@ namespace BVAService.Devices
         {
             if (laserMove == true)
             {
-                // nova pozice pro 'Ellipse'
+                // nova pozice pro 'Ellipse' na 'Canvas'
                 Canvas.SetLeft(ellipse, pos.X - ellipse.ActualWidth / 2);
                 Canvas.SetTop(ellipse, pos.Y - ellipse.ActualHeight / 2);
-
+                // pokud je pozice mimo platnou plochu, tak konec
                 if ((pos.X < 10) || (pos.X > (canvas.ActualWidth - 10))) { return; }
                 if ((pos.Y < 10) || (pos.Y > (canvas.ActualHeight - 10))) { return; }
-
-                // nova pozice pro 'Servo(s)' v '%'
+                // nova pozice pro 'Servo(s)' v '%' (-/+100)
                 double posX = ((pos.X - (canvas.ActualWidth / 2)) / (canvas.ActualWidth / 2) * 100.0);
                 double posY = ((pos.Y - (canvas.ActualHeight / 2)) / (canvas.ActualHeight / 2) * 100.0);
                 posY *= -1.0;
@@ -281,7 +363,7 @@ namespace BVAService.Devices
                 case EnFloorAction.Zero: { motorRotaryValue = 0; break; }
             }
             // vykonani pohybu motoru
-            if (EnableHW == true)
+            if (EnableHW != EnHwDevType.None)
             {
                 if (motorMoveAction != sbyte.MaxValue)
                 {
@@ -290,7 +372,7 @@ namespace BVAService.Devices
                 }
                 if (motorRotaryValue != UInt16.MaxValue)
                 {
-                    DataUtils.GetValue<ItmDataInt32>(EnDeviceIdent.Motor, (byte)EnMotorElement.Rotary, 2).Value = motorRotaryValue;
+                    DataUtils.GetValue<ItmDataInt32>(EnDeviceIdent.Motor, (byte)EnMotorElement.Rotary, 1).Value = motorRotaryValue;
                     UpdateDevice(EnDeviceIdent.Motor);
                 }
             }
@@ -301,7 +383,7 @@ namespace BVAService.Devices
         {
             get
             {
-                if (EnableHW == false) { return 0; }
+                if (EnableHW == EnHwDevType.None) { return 0; }
                 return DataUtils.GetValue<ItmDataInt32>(EnDeviceIdent.Motor, (byte)EnMotorElement.Rotary, 1).Value;
             }
         }
@@ -311,7 +393,7 @@ namespace BVAService.Devices
         {
             get
             {
-                if (EnableHW == false) { return false; }
+                if (EnableHW != EnHwDevType.None) { return false; }
                 return DataUtils.GetValue<ItmDataBool>(EnDeviceIdent.Motor, (byte)EnMotorElement.Zero, 1).Value;
             }
         }
@@ -325,9 +407,9 @@ namespace BVAService.Devices
             EnImageParms prms = EnImageParms.Set /* parametry pro zobrazeni */)
         {
             // pokud neni povolen HW, tak navrat
-            if (EnableHW == false) { return -1; }
+            if (EnableHW == EnHwDevType.None) { return -1; }
             // vytvoreni aktualniho 'Ident' pro 'Device'
-            string anchorIdent = (int.Parse(DevsCmns.EnDeviceIdent.AnchorsBase) + number).ToString("D8");
+            string anchorIdent = (int.Parse(EnDeviceIdent.AnchorsBase) + number).ToString("D8");
             // nalezeni obrazku podle jeho nazvu
             OneImage omeImage = DevsMain.images.FirstOrDefault(item => item.Name == imageName);
             // pokud obrazek nenalezen, tak chyba
@@ -349,7 +431,7 @@ namespace BVAService.Devices
         public static void AnchorSetImage(params Tuple<int, string>[] anchorAndImage)
         {
             // pokud neni povolen HW, tak navrat
-            if (EnableHW == false) { return; }
+            if (EnableHW == EnHwDevType.None) { return; }
             // pokud neni predan zadny parametr, tak jde o zhasnuti vsech 'Anchor(s)'
             bool resetAll = (anchorAndImage == null);
             // projiti vsech 'Anchor(s)'
@@ -365,8 +447,8 @@ namespace BVAService.Devices
                 if (resetAll == true)
                 {
                     // zaslani povelu 'Reset' do zarizeni
-                    UniTestsHW.Communs.CmnMain.CmdWrite(device /* tomuto zarizeni */,
-                        (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmd.Mode, (byte)UniTestsHW.Communs.CmnConsts.EnPaketCmdModeSub.Device, cmdDataReset);
+                    CmnMain.CmdWrite(device /* tomuto zarizeni */,
+                        (byte)CmnConsts.EnPaketCmd.Mode, (byte)CmnConsts.EnPaketCmdModeSub.Device, cmdDataReset);
                 }
                 // pokud jde o zsalni obrazku
                 else
@@ -395,7 +477,7 @@ namespace BVAService.Devices
         // zapis zmen do HW 'Device(s)' / 'Element(s)'
         public static void UpdateDevice(string devIdent)
         {
-            if (EnableHW == true)
+            if (EnableHW != EnHwDevType.None)
                 { DataMain.DataWrite(DataUtils.GetDevice(devIdent)); }
         }
     }
