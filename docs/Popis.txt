@@ -1,0 +1,3 @@
+Servisni aplikace urcena k testovani cinnosti externiho HW.
+Bude prejmenovana.
+(Nejde o aplikaci pro vykonavani testu / vysetreni.)
